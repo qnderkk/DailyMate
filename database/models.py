@@ -1,7 +1,7 @@
 from datetime import datetime
 import enum
 
-from sqlalchemy import Integer, BigInteger, String, DateTime, ForeignKey, Boolean, Enum, CheckConstraint, Text
+from sqlalchemy import Integer, BigInteger, String, DateTime, ForeignKey, Boolean, Enum, CheckConstraint, Text, Float
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
@@ -12,6 +12,18 @@ class TaskStatus(enum.Enum):
     completed = "completed"
     overdue = "overdue"
     postponed = "postponed"
+
+
+class ReminderStatus(enum.Enum):
+    scheduled = "scheduled"
+    sent = "sent"
+    skipped = "skipped"
+
+
+class AIInteractionType(enum.Enum):
+    parse_task = "parse_task"
+    generate_checklist = "generate_checklist"
+    summarize = "summarize"
 
 
 class Base(DeclarativeBase):
@@ -52,7 +64,7 @@ class Task(Base):
     category_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("categories.id", ondelete="CASCADE"))
     title: Mapped[str] = mapped_column(String(128), nullable=False)
     description: Mapped[str] = mapped_column(String(128))
-    due_data: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    due_data: Mapped[datetime] = mapped_column(DateTime)
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus))
     priority: Mapped[int] = mapped_column(
         Integer,
@@ -64,8 +76,21 @@ class Task(Base):
     completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
+class Reminder(Base):
+    __tablename__ = "reminders"
+
+    task_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("tasks.id", ondelete="CASCADE"))
+    scheduled_at: Mapped[datetime] = mapped_column(DateTime)
+    status: Mapped[ReminderStatus] = mapped_column(Enum(ReminderStatus))
+    sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
-
-
+class AIInteraction(Base):
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"))
+    action_type: Mapped[AIInteractionType] = mapped_column(Enum(AIInteractionType))
+    request_payload: Mapped[str] = mapped_column(Text, nullable=False)
+    response_payload: Mapped[str] = mapped_column(Text)
+    success: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    latency_ms: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
