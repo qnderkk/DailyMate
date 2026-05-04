@@ -33,7 +33,7 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    telegrma_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
+    telegrm_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
     username: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     settings: Mapped[dict] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -68,7 +68,7 @@ class Task(Base):
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus))
     priority: Mapped[int] = mapped_column(
         Integer,
-        CheckConstraint("priority >= 1 AND priopity <= 3")
+        CheckConstraint("priority >= 1 AND priority <= 3")
     )
     original_text: Mapped[str] = mapped_column(Text , nullable=False)
     ai_extraction: Mapped[dict] = mapped_column(JSONB)
@@ -86,6 +86,8 @@ class Reminder(Base):
 
 
 class AIInteraction(Base):
+    __tablename__ = "ai_interactions"
+    
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"))
     action_type: Mapped[AIInteractionType] = mapped_column(Enum(AIInteractionType))
     request_payload: Mapped[str] = mapped_column(Text, nullable=False)

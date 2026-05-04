@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
+    BOT_TOKEN: str
+
     @computed_field
     @property
     def database_url(self) -> str:
